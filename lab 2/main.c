@@ -437,6 +437,7 @@ int main (int argc, char *argv[]){
 		if (l==0)
 		{
 			printf("program don t faund file");
+			printf ("u can use -help\n");
 		}
 		j=0;
 		if (mode==0)

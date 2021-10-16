@@ -484,7 +484,7 @@ int main (int argc, char *argv[]){
 	
 	 end = clock();
 	 if(t==1)
-  		printf("\ntime %2.4ld\n",(end - start) / (CLOCKS_PER_SEC));
+  		printf("\ntime %ld\nms",(end - start)*1000 / (CLOCKS_PER_SEC));
 	
 	
 	return 0;

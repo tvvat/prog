@@ -37,6 +37,12 @@ void print(unsigned int *c,unsigned int key1,unsigned int key2)
 		for(int i=0;i<4;i++)
 		{printf("%02X",*(c+i));
 		 }
+	if (debug==1)
+	{	
+		 		
+		 		printf("\nkey:\n%u\n%u\n%u\n",key,key1,key2);
+	}
+	
 }
 
 unsigned int chek_key(unsigned int k)
@@ -168,7 +174,7 @@ int information_block(unsigned int *C,FILE *p)
 }
 void last(unsigned int *c)
 {	unsigned int l=key;
-	for(int i=3;i>=0;i--)
+	for(int i=0;i<4;i++)
 	{ 	*(c+i)=*(c+i)^(key%256);
 		key/=256;
 		
@@ -300,6 +306,17 @@ void s_blok1(unsigned int *c,unsigned int k )
 							mode=1;
 					
 					}
+				s="ofb";
+				if (mode!=0)
+				 {
+					for(int i=0;i<3;i++)
+					{	
+						if (s[i]!=optarg[i])
+							mode=-1;
+						else 	
+							mode=2;
+					
+					}
 				if(mode==-1)
 					printf(" you write '-m',mabe you mean 'ecb' or 'cbc'?");
 				}
@@ -343,35 +360,8 @@ void function_first (unsigned int * C0,FILE *p,unsigned int  key1,unsigned int k
 	if (shifr_deshifr==0)	
 		{	
 			information_block(C0,p);
-			if (debug==1)
-			{	printf("\nkey:\n%x\n",key);
-				for(int i=0;i<4;i++)
-					{printf("%02X",*(C0+i));
-		 			}
-	
-		 		
-		 		
-			}
 			s_blok(C0,key1);
-			if (debug==1)
-			{	printf("\nkey:\n%x\n",key1);
-				for(int i=0;i<4;i++)
-					{printf("%02X",*(C0+i));
-		 			}
-	
-		 		
-		 		
-			}
 			s_blok(C0,key2);
-			if (debug==1)
-			{	printf("\nkey:\n%x\n",key2);
-				for(int i=0;i<4;i++)
-					{printf("%02X",*(C0+i));
-		 			}
-	
-		 		
-		 		
-			}
 			print(C0,key1,key2);
 		}
 	else
@@ -480,6 +470,65 @@ void printfTime()
 	end = clock();
 	printf("\ntime =%ldms\nspeed =%ld b/m\n",(end - start)*1000 / (CLOCKS_PER_SEC),((end - start) / (CLOCKS_PER_SEC))/12500);
 }
+void s_blok2(unsigned int * C0,unsigned int  key1,unsigned int key2)
+{ 	for (i=;i>=0;i--)
+	{	l0[i]=iv%256;
+		iv/=256;
+	}
+`	for(int i=0;i<4;i++)
+	{	
+		*(l0+i)=aes[(c[i])];
+	}
+	
+	int t=*(c+2);
+	*(c+2)=*(c+3);
+	*(c+3)=t;
+		
+	
+	for(int i=3;i>=0;i--)
+	{ 	*(c+i)=*(c+i)^(k%256);
+		k/=256;
+		
+	}
+	k=l;
+	
+	iv=iv^key;
+	l=iv;
+	unsigned int * l0=malloc(4*sizeof(int));
+	for (i=3;i>=0;i--)
+	{	l0[i]=iv%256;
+		iv/=256;
+	}
+	
+	int t=*(l0+2);
+	*(l0+2)=*(l0+3);
+	*(l0+3)=t;
+	for(int i=0;i<4;i++)
+	{	for (int j=0;j<256;j++ )
+		 if (*(l0+i)==aes[j])
+		 { 	*(+i)=j; break;
+		 
+		 }
+	}
+  	iv=iv^key1;
+ 	iv=iv^key2;
+	
+
+}
+ int function_3(unsigned int * C0,FILE *p,unsigned int  key1,unsigned int key2)
+{ 	if (shifr_deshifr==0)	
+	{	
+		information_block(C0,p);
+		s_blok2(C0,key1,key2);
+		
+		print(C0,key1,key2);
+		iv=new_iv(C0);
+		
+	}
+
+
+
+}
 int main (int argc, char *argv[]){
 	unsigned int * key2=malloc(1*sizeof(int));
 	unsigned int * key1=malloc(1*sizeof(int));
@@ -532,11 +581,19 @@ int main (int argc, char *argv[]){
 		 		}
 			}
 			else
-			{
+			{	
+				if (mode ==2)
+				{	if (iv==-1)
+					{	printf("u must write vector in hex if u want ofb");
+						return 0;
+					}
+				       start_potok()
+				}
+				else
 				printf ("program can not work if don t know u want ecb or cbc\n");
 				printf ("u can use -help\n");
 			}
-		
+			
 		
 	
 		}
@@ -550,4 +607,3 @@ int main (int argc, char *argv[]){
 	printf("\n");
 	return 0;
 }
-

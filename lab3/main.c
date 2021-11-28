@@ -143,8 +143,7 @@ unsigned int func_reg(unsigned int *reg,int size){
 	unsigned int a=0, b = 0, c=0, p=0;
 	a = *(reg + (size-7));
   	b = *(reg + (size-5));
-  	c = *(reg + (size-3));
-  	printf("a=%x a=%x a=%x\n",a,b,c);
+  	c = *(reg + (size-3)); 
   	p = a^b^c^0x1;
   	return p;
 
@@ -160,7 +159,6 @@ void shift(unsigned int  new,unsigned int *reg,int size)
 unsigned int gama(int a, int b,int c)
 { 	unsigned int res = 0, mod = 1;
 	mod=mod<<8;
-printf("re a=%x re a=%x re a=%x\n",re[a],re2[b],re3[c]);
   	res = (((re[a]*re2[b]*re3[c])%mod)+((re[a]*re2[b])%mod)+((re[a]*re3[c])%mod)+1)%mod;
   	return res;
 }
@@ -173,16 +171,20 @@ void function(char*a1)
 	{ 	s[0]=a1[i];
 		s[1]=a1[i+1];
 		text=v_int(s);
+		
 		unsigned int g;
+		g=gama(0,0,0);
+		text=text^g;
+		printf("%02x",text);
 		g=func_reg(re,7);
 		shift(g,re,7);
 		g=func_reg(re2,9);
 		shift(g,re2,9);
 		g=func_reg(re3,11);
 		shift(g,re3,11);
-		g=gama(6,8,10);
-		text=text^g;
-		printf("%02x\n",text);
+		
+		g=gama(0,0,0);
+		
 		 i+=2;
 	}
 	
@@ -222,6 +224,6 @@ int main (int argc, char *argv[]){
 	 }
 
 
-
+	printf("\n");
 	return 0;
 }

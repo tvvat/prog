@@ -313,11 +313,6 @@ int proverka_str(char* s,char*s1)
 				shifr_deshifr=1;
 				break;
 			};
-			
-			case '?':  {
-				printf("found unknown option\n");
-				break;
-			};
 			case 'i':  {
 				iv=v_int(optarg);
 				break;
@@ -330,6 +325,11 @@ int proverka_str(char* s,char*s1)
 				t=1;
 				break;
 			}
+			case '?':  {
+				printf("found unknown option\n");
+				break;
+			};
+			
 			
 		
 		}
@@ -504,9 +504,9 @@ int main (int argc, char *argv[]){
 			}
 		}
 		else 
-		{
-		if (iv==-1)
-			{	
+		{ 
+		if (iv==0)
+			{	printf("%x\n",iv);
 				printf("u must write vector in hex if u want cbc");
 				return 0;
 			}

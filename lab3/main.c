@@ -15,12 +15,16 @@ const struct option long_options[] = {
 		{"time",no_argument,NULL,'t'},
 		{NULL,0,NULL,0}
 	};
-char *fkey;
-char *fp;
-int l;
-unsigned int *re;
-unsigned int *re2;
-unsigned int *re3;
+
+#define REG_1_SIZE 7
+#define REG_2_SIZE 9
+#define REG_3_SIZE 11
+
+struct registers {
+	unsigned int first[REG_1_SIZE];
+	unsigned int second[REG_2_SIZE];
+	unsigned int third[REG_3_SIZE];
+} reg;
 
 char * StrRemWord(char * str, char * word)
 {
@@ -28,6 +32,7 @@ char * StrRemWord(char * str, char * word)
     long sLen = strlen(str);
     long wLen = strlen(word);
     char * sub;
+    
     sub = strstr(str,word);
     while(sub)
     {
@@ -39,10 +44,10 @@ char * StrRemWord(char * str, char * word)
     }
     return str;
 }	
-void vvod(int argc,char *argv[],int option_index)
+void input(int argc,char *argv[],int option_index,char **fkey,char **fp)
  {  	
-	int rez=getopt_long(argc,argv,short_options,long_options,NULL);
-	while ((rez)!=-1)
+	int rez = getopt_long(argc,argv,short_options,long_options,NULL);
+	while ((rez) != -1)
 	{
 		switch(rez)
 		{  
@@ -55,9 +60,8 @@ void vvod(int argc,char *argv[],int option_index)
 					break;
 				}
 			case 'k': {
-				fkey=StrRemWord(optarg,"path_to_file_with");
-				fp=StrRemWord(argv[argc-1],"path_to_file_with");;
-				
+				*fkey=StrRemWord(optarg,"path_to_file_with");
+				*fp=StrRemWord(argv[argc-1],"path_to_file_with");
 				break;
 			};
 			case '?':  {
@@ -67,26 +71,28 @@ void vvod(int argc,char *argv[],int option_index)
 			
 		
 		}
-		rez=getopt_long(argc,argv,short_options,long_options,NULL);
+		rez = getopt_long(argc,argv,short_options,long_options,NULL);
 	}
 	
  }
- char* str(FILE * p,char * s){
-	int i=0;
-	*(s+i)=fgetc(p);
-	while (*(s+i)!=EOF)
+int  str(FILE * p,char ** a){
+	char * s=(char*)malloc(1); ;
+	int i = 0;
+	*(s+i) = fgetc(p);
+	while (*(s+i) != EOF)
 	{	
 		 if (*(s+i)!='\n')
-		 {	i++;
-		 
-		 	s= (char*)realloc(s, (i+1) * sizeof(char));
-			*(s+i)=fgetc(p);
+		 {	
+		 	i++;
+		 	s = (char*)realloc(s, (i+1) * sizeof(char));
+			*(s+i) = fgetc(p);
 		 }
-		else  *(s+i)=fgetc(p);
+		else  
+			*(s+i) = fgetc(p);
 	}
 	
-	 l=i;
-	return s;
+	 *a = s;
+	return i;
 	
 
 }
@@ -113,34 +119,39 @@ unsigned int v_int(char *a)
   return res;
 
 }
-void vvod_reg(char * s){
-	int i=0;
-	char* a=(char*)malloc(3);
-	a[2]='\0';
-	int j=0;
-	 for(i=0;i<14;i+=2)
-	 	{ a[0]=s[i];
-	 	a[1]=s[i+1];
-        	re[j]=v_int(a);
+void input_reg(char * s){
+	int i = 0;
+	char* a = (char*)malloc(3);
+	a[2] = '\0';
+	int j = 0;
+	
+	for(i = 0;i < 14;i += 2)
+	{ 
+	 	a[0] = s[i];
+	 	a[1] = s[i+1];
+        	reg.first[j] = v_int(a);
         	j++;
-        	}
-        j=0;
-          for(i=14;i<32;i+=2)
-	 	{ a[0]=s[i];
-	 	a[1]=s[i+1];
-        	re2[j]=v_int(a);
+        }
+        j = 0;
+        for(i = 14;i < 32;i += 2)
+	 { 
+	 	a[0] = s[i];
+	 	a[1] = s[i+1];
+        	reg.second[j] = v_int(a);
         	j++;
-        	}
-        j=0;
-         for(i=32;i<54;i+=2)
-	 	{ a[0]=s[i];
-	 	a[1]=s[i+1];
-        	re3[j]=v_int(a);
+        }
+        j = 0;
+        for(i = 32;i < 54;i += 2)
+	{ 
+		a[0] = s[i];
+	 	a[1] = s[i+1];
+        	reg.third[j] = v_int(a);
         	j++;
-        	}
+        }
 }
 unsigned int func_reg(unsigned int *reg,int size){
 	unsigned int a=0, b = 0, c=0, p=0;
+	
 	a = *(reg + (size-7));
   	b = *(reg + (size-5));
   	c = *(reg + (size-3)); 
@@ -150,79 +161,88 @@ unsigned int func_reg(unsigned int *reg,int size){
 }
 void shift(unsigned int  new,unsigned int *reg,int size)
 {
-	for (int i=0;i<size-1;i++){
-    	*(reg+i) =*(reg+i+1);
+	for (int i = 0 ;i < size-1;i++)
+	{
+    		*(reg+i) = *(reg+i+1);
   	}
-	*(reg+size-1)=new;
+  	
+	*(reg+size-1) = new;
 
 }
 unsigned int gama(int a, int b,int c)
-{ 	unsigned int res = 0, mod = 1;
-	mod=mod<<8;
-  	res = (((re[a]*re2[b]*re3[c])%mod)+((re[a]*re2[b])%mod)+((re[a]*re3[c])%mod)+1)%mod;
+{ 	
+	unsigned int res = 0, mod = 1;
+	mod = mod << 8;
+  	res = (((reg.first[a] * reg.second[b] * reg.third[c]) %mod) + ((reg.first[a] * reg.second[b]) %mod) + ((reg.first[a] * reg.third[c])  %mod) +1 ) %mod;
   	return res;
 }
-void function(char*a1)
-{	char*s=(char*)malloc(3); 
-	s[2]='\0';
-	int i=0;
+void function(char* a1,int l)
+{	char *s = (char*)malloc(3); 
+	s[2] = '\0';
+	int i = 0;
 	unsigned  int text;
-	while(i<l)
-	{ 	s[0]=a1[i];
-		s[1]=a1[i+1];
-		text=v_int(s);
+	
+	while(i < l)
+	{ 	s[0] = a1[i];
+		s[1] = a1[i+1];
+		text = v_int(s);
 		
 		unsigned int g;
-		g=gama(0,0,0);
-		text=text^g;
-		printf("%02x",text);
-		g=func_reg(re,7);
-		shift(g,re,7);
-		g=func_reg(re2,9);
-		shift(g,re2,9);
-		g=func_reg(re3,11);
-		shift(g,re3,11);
 		
-		g=gama(0,0,0);
+		g = gama(0,0,0);
+		text = text ^ g;
+		printf("%02x",text);
+		
+		g = func_reg(reg.first,7);
+		shift(g,reg.first,7);
+		
+		g = func_reg(reg.second,9);
+		shift(g,reg.second,9);
+		
+		g = func_reg(reg.third,11);
+		shift(g,reg.third,11);
+	
 		
 		 i+=2;
 	}
 	
 }
 int main (int argc, char *argv[]){
-	vvod(argc,argv,0);
+	char *fkey;
+	char *fp;
+	input(argc,argv,0,&fkey,&fp);
+	
 	FILE *pkey=fopen(fkey, "r");
 	FILE *p=fopen(fp, "r");
-	re=malloc(7*sizeof(int));
-	re2=malloc(9*sizeof(int));
-	re3=malloc(11*sizeof(int));
-	char*a= (char*)malloc(54*sizeof(char));
-	char*a1= (char*)malloc(10000000*sizeof(char));
-	if(!p)
+	
+	int l;
+	char*a = (char*)malloc(54*sizeof(char));
+	char*a1 = (char*)malloc(10000000*sizeof(char));
+	
+	if( !p)
 	{
-	 	printf("program don t faund file %s ",fp);	
+	 	printf ("program don t faund file %s ",fp);	
 	 	printf ("u can use -help\n");
 	 	return 0;
 	 }
 	 else
 	 {	if(!pkey)
-	 	{ 	printf("program don t faund file %s ",fkey);	
+	 	{ 	printf ("program don t faund file %s ",fkey);	
 	 		printf ("u can use -help\n");
 	 		return 0;
 	 	}
 	 	else
 	 	{	
-	 		a=str(pkey,a);
-	 		a1=str(p,a1);
-	 		vvod_reg(a);
-	 		function(a1);
+	 		l = str(pkey,&a);
+	 		l = str(p,&a1);
+	 		input_reg(a);
+	 		function(a1,l);
 	 		
 	
 	 	}
 	 
 	 
 	 }
-
 
 	printf("\n");
 	return 0;

@@ -334,7 +334,7 @@ int main (int argc, char *argv[]) {
 			return 0;
 		}
 		
-		unsigned char *TEXT;
+		unsigned char *TEXT = malloc( strlen(Text)+8*sizeof(char));;
 		file8null(&TEXT);
 		
 		srand(time(NULL));
@@ -354,7 +354,7 @@ int main (int argc, char *argv[]) {
 		else
 			function_sha1 (nonce, password, key, key_len);
 		
-		unsigned char *outputtext = malloc(100000*sizeof(char));
+		unsigned char outputtext[strlen(Text)+8];
 		
 		if (key_len == 24) 
       			des3_encrypt (TEXT, strlen(Text)+8, iv, key, outputtext);

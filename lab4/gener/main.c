@@ -8,6 +8,10 @@
 #include <openssl/des.h>
 #include <openssl/aes.h>
 
+
+#define MD5 0
+#define SHA1 1
+
 #define PASSWORD_LEN 4
 
 #define LEN_CHAR 256
@@ -282,27 +286,28 @@ void aes_encrypt(unsigned char *text, size_t len, unsigned char *iv, unsigned ch
 	AES_cbc_encrypt (text, outputtext, len, &akey, iv, AES_ENCRYPT);
 }
 
-void functionprint(unsigned char *outputtext, char *func_enc, int key_len, int iv_len, char *fname, unsigned char *nonce, unsigned char *iv, unsigned char *key, int ID_algo, int len) {
+void functionprint(unsigned char *outputtext, char *func_enc, int iv_len, char *fname, unsigned char *nonce, unsigned char *iv,  int ID_algo, int len) {
 	FILE * output= fopen(fname, "w");
-
+	
   	if (strcmp(func_enc, "md5") == 0) 
-    		fprintf(output, "ENC%d", 0);
+    		fprintf(output, "ENC%c", 0);
   	else 
-    		fprintf(output, "ENC%d", 1);
+    		fprintf(output, "ENC%c", 1);
 
   	
-  	fprintf(output, "%x", ID_algo);
+  	fprintf(output, "%c", ID_algo);
 
   	for(int i = 0; i < NONCE_LEN; i++) 
-    		fprintf(output, "%02x", nonce[i]);
+    		fprintf(output, "%c", nonce[i]);
   		
 
  	for(int i = 0; i < iv_len; i++) 
-    		fprintf(output, "%02x", iv[i]);
+    		fprintf(output, "%c", iv[i]);
   
 
   	for(int i = 0; i < len; i++) 
-    		fprintf(output, "%02x", outputtext[i]);
+    		{fprintf(output, "%c", outputtext[i]);
+    		printf("%02x", outputtext[i]);}
   
 
 
@@ -365,7 +370,7 @@ int main (int argc, char *argv[]) {
      		char *fname = (char *)malloc(54*sizeof(char));
 		creat_fname_with_a_cipher (func_enc, func_h, argv[1], &fname);
 		printf ("%s", fname);
-		functionprint (outputtext, func_enc, key_len, iv_len, fname, nonce, iv, key, ID_algo, strlen(Text)+8);	
+		functionprint (outputtext, func_enc, iv_len, fname, nonce, iv, ID_algo, strlen(Text)+8);	
 		
 	}
 

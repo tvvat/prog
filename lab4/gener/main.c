@@ -70,38 +70,42 @@ void creat_fname_with_a_cipher(char *func_enc , char *func_h, char *password, ch
 
 void file8null(unsigned char  **TEXT) {
 
-	char *s = "00000000";
-	int tmp = strlen(Text)+8;
-	char *TEXTtmp = (char *) malloc((tmp) * sizeof(char));
-	TEXTtmp = strcat(TEXTtmp, s);
-	TEXTtmp = strcat(TEXTtmp, Text);
-	*TEXT = (unsigned char *)TEXTtmp;
+	int tmp = strlen(Text) + 8;
+	unsigned char *TEXTtmp = (char *) malloc((tmp) * sizeof(char));
+	 
+	for (int i = 0;i < tmp; i++)
+		*(TEXTtmp + i) = 0;	
+	
+    	memcpy(TEXTtmp + 8, Text, tmp - 8);
+    	
+    	*TEXT=TEXTtmp;
+	
 }
 
 void definition_input(char *func_h,int  *iv_len,int *key_len,int *id_algo) {
 	
-	if (strcmp(func_h,"3des") == 0) {
+	if (strcmp(func_h, "3des") == 0) {
 		*id_algo = 0;
 		*iv_len = V_L_3DES;
 		*key_len = KEY_L_3DES;
 		
 	}
 			
-	if(strcmp(func_h,"aes128") == 0) {
+	if(strcmp(func_h, "aes128") == 0) {
 		*id_algo = 1;
 		*iv_len = V_L_AES128;
 		*key_len = KEY_L_AES128;
 		
 	}
 	
-	if(strcmp(func_h,"aes192") == 0) {
+	if(strcmp(func_h, "aes192") == 0) {
 		*id_algo = 2;
 		*iv_len = V_L_AES192;
 		*key_len = KEY_L_AES192;
 		
 	}
 	
-	if(strcmp(func_h,"aes256")==0) {
+	if(strcmp(func_h, "aes256") == 0) {
 		*id_algo = 3;
 		*iv_len = V_L_AES256;
 		*key_len = KEY_L_AES256;
@@ -282,7 +286,7 @@ void des3_encrypt(unsigned char *text, int len, unsigned char *iv, unsigned char
 
 void aes_encrypt(unsigned char *text, size_t len, unsigned char *iv, unsigned char *key, unsigned char *outputtext, int key_len) {
 	AES_KEY akey;
-	AES_set_encrypt_key (key, key_len, &akey);
+	AES_set_encrypt_key (key, key_len*8, &akey);
 	AES_cbc_encrypt (text, outputtext, len, &akey, iv, AES_ENCRYPT);
 }
 
@@ -306,8 +310,8 @@ void functionprint(unsigned char *outputtext, char *func_enc, int iv_len, char *
   
 
   	for(int i = 0; i < len; i++) 
-    		{fprintf(output, "%c", outputtext[i]);
-    		printf("%02x", outputtext[i]);}
+    		fprintf(output, "%c", outputtext[i]);
+    		
   
 
 
@@ -354,22 +358,23 @@ int main (int argc, char *argv[]) {
 		
 		unsigned char key[key_len];
 		
+		int len=strlen(Text)+8;
 		if(strcmp(func_enc,"md5")==0)
 			function_md5 (nonce, password, key, key_len);
 		else
 			function_sha1 (nonce, password, key, key_len);
 		
-		unsigned char outputtext[strlen(Text)+8];
+		unsigned char outputtext[len];
 		
 		if (key_len == 24) 
-      			des3_encrypt (TEXT, strlen(Text)+8, iv, key, outputtext);
+      			des3_encrypt (TEXT, len, iv, key, outputtext);
    		
    		else 
-     			aes_encrypt (TEXT, strlen(Text)+8, iv, key, outputtext, key_len );
+     			aes_encrypt (TEXT, len, iv, key, outputtext, key_len );
 
      		char *fname = (char *)malloc(54*sizeof(char));
 		creat_fname_with_a_cipher (func_enc, func_h, argv[1], &fname);
-		printf ("%s", fname);
+		printf ("%s\n", fname);
 		functionprint (outputtext, func_enc, iv_len, fname, nonce, iv, ID_algo, strlen(Text)+8);	
 		
 	}

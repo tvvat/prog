@@ -343,22 +343,26 @@ int main (int argc, char *argv[]) {
 			return 0;
 		}
 		
-		unsigned char *TEXT = malloc( strlen(Text)+8*sizeof(char));;
+		int len=strlen(Text)+8;
+		unsigned char *TEXT = malloc( len*sizeof(char));;
 		file8null(&TEXT);
 		
-		srand(time(NULL));
-		 
 		int iv_len, key_len ;
 		definition_input (func_h, &iv_len, &key_len, &ID_algo);
 		
 		unsigned char nonce[NONCE_LEN];
 		unsigned char iv[iv_len];
+		
 		func_gen(nonce, NONCE_LEN);
 		func_gen(iv, iv_len);
 		
+		
+		unsigned char iv2[iv_len];
+		memcpy(iv2, iv, iv_len);
+		
+		
 		unsigned char key[key_len];
 		
-		int len=strlen(Text)+8;
 		if(strcmp(func_enc,"md5")==0)
 			function_md5 (nonce, password, key, key_len);
 		else
@@ -375,7 +379,8 @@ int main (int argc, char *argv[]) {
      		char *fname = (char *)malloc(54*sizeof(char));
 		creat_fname_with_a_cipher (func_enc, func_h, argv[1], &fname);
 		printf ("%s\n", fname);
-		functionprint (outputtext, func_enc, iv_len, fname, nonce, iv, ID_algo, strlen(Text)+8);	
+		
+		functionprint (outputtext, func_enc, iv_len, fname, nonce, iv2, ID_algo, strlen(Text)+8);	
 		
 	}
 

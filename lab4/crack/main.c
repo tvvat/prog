@@ -434,7 +434,7 @@ void func_crak(unsigned char func_enc, unsigned char func_h, int key_len, int le
  	unsigned char key[key_len];
   	double time_in_seconds = 0;
   	int firstnull = 0;
-  	int i ;
+  	unsigned  int i ;
   	
 	if ( flag )
 		 printf("Current: 00000000 - 0000ffff\n");
@@ -444,15 +444,13 @@ void func_crak(unsigned char func_enc, unsigned char func_h, int key_len, int le
   	clock_t previous = clock();
   	
   	unsigned char iv_2[iv_len];
-  	
-
-  memcpy(iv_2, iv, iv_len);
+  	memcpy(iv_2, iv, iv_len);
   
-  	for (i = 0; i <= UINT_MAX ; i++) {
+  	for (i = 0 ;i <=  UINT_MAX; i++) {
   		memcpy(iv, iv_2, iv_len);
 		func_psswrd(password, i);
 		
-		if ((!(i & 0xffff)) && ( flag ) && (i != 0)) {
+		{
 
      			previous = current;
       			current = clock();
@@ -462,8 +460,7 @@ void func_crak(unsigned char func_enc, unsigned char func_h, int key_len, int le
 			time_in_seconds = (double) (current - previous) / CLOCKS_PER_SEC;
       			printf("Current speed: %6.0f c/s | ", (0x10000 / time_in_seconds));
 
-      			
-		}
+   		}
 		
 		if(func_enc == MD5)
 			function_md5 (nonce, password, key, key_len);

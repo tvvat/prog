@@ -241,7 +241,7 @@ void func_psswrd(unsigned char *res,int a) {
 	}
 
 }
-void des3_encrypt(unsigned char *text, int len, unsigned char *iv, unsigned char *key, unsigned char *outputtext) {
+void des3_decrypt(unsigned char *text, int len, unsigned char *iv, unsigned char *key, unsigned char *outputtext) {
   	DES_cblock key1, key2, key3;
 	DES_key_schedule ks1, ks2, ks3;
 
@@ -253,14 +253,15 @@ void des3_encrypt(unsigned char *text, int len, unsigned char *iv, unsigned char
 	DES_set_key((DES_cblock *) key2, &ks2);
 	DES_set_key((DES_cblock *) key3, &ks3);
 
-	DES_ede3_cbc_encrypt(text, outputtext, len, &ks1, &ks2, &ks3, (DES_cblock *) iv, DES_ENCRYPT);
+	DES_ede3_cbc_encrypt(text, outputtext, len, &ks1, &ks2, &ks3, (DES_cblock *) iv, DES_DECRYPT);
     		
 }
 
-void aes_encrypt(unsigned char *text, size_t len, unsigned char *iv, unsigned char *key, unsigned char *outputtext, int key_len) {
-	AES_KEY akey;
-	AES_set_encrypt_key (key, key_len*8, &akey);
-	AES_cbc_encrypt (text, outputtext, len, &akey, iv, AES_ENCRYPT);
+void aes_decrypt(unsigned char *text, size_t len, unsigned char *iv, unsigned char *key, unsigned char *outputtext, int key_len) {
+	
+  	AES_KEY akey;
+	AES_set_decrypt_key(key, key_len*8, &akey);
+	AES_cbc_encrypt(text, outputtext, len, &akey, iv, DES_DECRYPT);
 }
 
 
@@ -364,7 +365,7 @@ void function_md5(unsigned char *nonce, unsigned char *password, unsigned char *
 	
 	memcpy(key, hmac, HMAC_MD5_LEN); 
 	
-	int def = key_len - HMAC_MD5_LEN;
+	int def =  HMAC_MD5_LEN - key_len;
 	if(def > 0) {
         	unsigned char tmphmac[HMAC_MD5_LEN];
         
@@ -413,12 +414,7 @@ void function_sha1(unsigned char *nonce, unsigned char *password, unsigned char 
  	}
 
 
-  	printf("\nMessage's text is: \n\n");
-  	for (int i = 8; i < len; i++) {
-    		printf("%c", text[i]);
-  	}
-
- 	printf("\n\n");
+  	
 
  	printf("\nMessage's text in HEX is: \n\n");
  	for (int i = 8; i < len; i++) {
@@ -447,25 +443,26 @@ void func_crak(unsigned char func_enc, unsigned char func_h, int key_len, int le
   	clock_t current = clock();
   	clock_t previous = clock();
   	
+  	unsigned char iv_2[iv_len];
   	
+
+  memcpy(iv_2, iv, iv_len);
+  
   	for (i = 0; i <= UINT_MAX ; i++) {
-  	
+  		memcpy(iv, iv_2, iv_len);
 		func_psswrd(password, i);
 		
 		if ((!(i & 0xffff)) && ( flag ) && (i != 0)) {
 
      			previous = current;
       			current = clock();
-      			
 			if ( flag )
 			 	printf("Current: %08x - %08x | ", i, (i + 0xffff));
 	
 			time_in_seconds = (double) (current - previous) / CLOCKS_PER_SEC;
       			printf("Current speed: %6.0f c/s | ", (0x10000 / time_in_seconds));
 
-      			time_in_seconds = (double) (current - start) / CLOCKS_PER_SEC;
-      			printf("Average speed: %6.0f c/s\n", (i / time_in_seconds));
-
+      			
 		}
 		
 		if(func_enc == MD5)
@@ -474,18 +471,17 @@ void func_crak(unsigned char func_enc, unsigned char func_h, int key_len, int le
 			function_sha1 (nonce, password, key, key_len);
 		
 		if (key_len == 24) 
-      			des3_encrypt (ctext, len, iv, key, text);
+      			des3_decrypt (ctext, len, iv, key, text);
    		
    		else 
-     			aes_encrypt (ctext, len, iv, key, text, key_len );
-
-		
-		
+     			aes_decrypt (ctext, len, iv, key, text, key_len );
+	
     		for (int j = 0; j < 8; j++) {
       			if (text[j] == 0)
-        			firstnull = 1;
+        			{firstnull = 1;
+        			}
         		
-      			else {
+      			else {	
       				firstnull = 0;
       				break;
       			}
@@ -496,9 +492,9 @@ void func_crak(unsigned char func_enc, unsigned char func_h, int key_len, int le
 
     		if (firstnull)
      	 		break;
+     	 	printf("\n");
   
   	}
-  		
   		
   		
   	fprin(password, start, current, previous, flag, text, len, i);
@@ -537,6 +533,7 @@ int main (int argc, char *argv[]) {
 	 	else
 	 	{ 	
 	 	 	printf("\nStart cracking\n\n\n");
+	 	 	
 	 	 	
     			func_crak(func_enc, func_h, key_len, len, iv_len, iv, nonce, ctext, flag);
 	 			
